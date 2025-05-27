@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +15,7 @@ const ArticlesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -53,7 +52,7 @@ const ArticlesPage = () => {
           );
         }
 
-        if (selectedCategory) {
+        if (selectedCategory && selectedCategory !== 'all') {
           filteredArticles = filteredArticles.filter((article: Article) =>
             article.category === selectedCategory
           );
@@ -80,7 +79,7 @@ const ArticlesPage = () => {
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
-    if (selectedCategory) params.set('category', selectedCategory);
+    if (selectedCategory && selectedCategory !== 'all') params.set('category', selectedCategory);
     if (currentPage > 1) params.set('page', currentPage.toString());
     
     setSearchParams(params);
@@ -146,7 +145,7 @@ const ArticlesPage = () => {
                 <SelectValue placeholder="Todas as categorias" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as categorias</SelectItem>
+                <SelectItem value="all">Todas as categorias</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
@@ -175,7 +174,7 @@ const ArticlesPage = () => {
               variant="outline"
               onClick={() => {
                 setSearchTerm('');
-                setSelectedCategory('');
+                setSelectedCategory('all');
                 setCurrentPage(1);
               }}
             >
