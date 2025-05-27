@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout/Layout";
+import AdminLayout from "@/components/Dashboard/AdminLayout";
 import HomePage from "@/pages/HomePage";
 import ArticlesPage from "@/pages/ArticlesPage";
 import LoginPage from "@/pages/LoginPage";
@@ -32,15 +33,18 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             
-            {/* Protected admin routes */}
+            {/* Protected admin routes with admin layout */}
             <Route 
-              path="/admin" 
+              path="/admin/*" 
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
+                  <AdminLayout />
                 </ProtectedRoute>
               } 
-            />
+            >
+              <Route index element={<AdminDashboard />} />
+              {/* Rotas futuras do admin poderão ser adicionadas aqui */}
+            </Route>
             
             {/* Catch-all route */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
