@@ -13,6 +13,21 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Menu, X, User, Settings, LogOut, TrendingUp } from 'lucide-react';
 
+// Função para gerar cor baseada na primeira letra
+const getAvatarColor = (name: string) => {
+  const firstLetter = name?.charAt(0)?.toLowerCase() || 'u';
+  const colors = {
+    'a': 'bg-red-500', 'b': 'bg-blue-500', 'c': 'bg-green-500', 'd': 'bg-yellow-500',
+    'e': 'bg-purple-500', 'f': 'bg-pink-500', 'g': 'bg-indigo-500', 'h': 'bg-orange-500',
+    'i': 'bg-teal-500', 'j': 'bg-cyan-500', 'k': 'bg-lime-500', 'l': 'bg-amber-500',
+    'm': 'bg-emerald-500', 'n': 'bg-violet-500', 'o': 'bg-rose-500', 'p': 'bg-sky-500',
+    'q': 'bg-stone-500', 'r': 'bg-slate-500', 's': 'bg-gray-500', 't': 'bg-zinc-500',
+    'u': 'bg-neutral-500', 'v': 'bg-red-600', 'w': 'bg-blue-600', 'x': 'bg-green-600',
+    'y': 'bg-yellow-600', 'z': 'bg-purple-600'
+  };
+  return colors[firstLetter] || 'bg-red-600';
+};
+
 const Header = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
@@ -67,22 +82,22 @@ const Header = () => {
             {/* Desktop Right Side */}
             <div className="hidden lg:flex items-center space-x-4">
               {isAuthenticated ? (
-                <>
+                <div className="flex items-center space-x-3">
                   {/* User Avatar with Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
                         <Avatar className="h-10 w-10">
                           {user?.avatar ? (
                             <AvatarImage src={user.avatar} alt={user.name} />
                           ) : null}
-                          <AvatarFallback className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm">
+                          <AvatarFallback className={`${getAvatarColor(user?.name || '')} text-white text-sm font-semibold`}>
                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-white shadow-lg border" align="end" forceMount>
+                    <DropdownMenuContent className="w-56 bg-white shadow-lg border z-50" align="end">
                       <div className="flex items-center justify-start gap-2 p-3">
                         <div className="flex flex-col space-y-1 leading-none">
                           <p className="font-medium text-sm text-slate-900">{user?.name}</p>
@@ -109,44 +124,59 @@ const Header = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {/* Mobile Menu Button */}
-                  <div className="lg:hidden">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                      {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                    </Button>
-                  </div>
-                </>
+                  {/* Menu Button */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48 bg-white shadow-lg border z-50" align="end">
+                      <DropdownMenuItem onClick={() => navigate('/')} className="cursor-pointer">
+                        Início
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/articles')} className="cursor-pointer">
+                        Notícias
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/categories')} className="cursor-pointer">
+                        Categorias
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               ) : (
-                <>
-                  {/* Login/Register buttons for non-authenticated users */}
-                  <div className="flex items-center space-x-3">
-                    <Button variant="ghost" onClick={() => navigate('/login')} className="text-slate-700 hover:text-red-600">
-                      Entrar
-                    </Button>
-                    <Button onClick={() => navigate('/register')} className="bg-red-600 hover:bg-red-700 text-white">
-                      Cadastrar
-                    </Button>
-                  </div>
-
-                  {/* Mobile Menu Button for non-authenticated users */}
-                  <div className="lg:hidden">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                      {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                    </Button>
-                  </div>
-                </>
+                <div className="flex items-center space-x-3">
+                  {/* Menu Button for non-authenticated users */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-48 bg-white shadow-lg border z-50" align="end">
+                      <DropdownMenuItem onClick={() => navigate('/')} className="cursor-pointer">
+                        Início
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/articles')} className="cursor-pointer">
+                        Notícias
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/categories')} className="cursor-pointer">
+                        Categorias
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/login')} className="cursor-pointer">
+                        Entrar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/register')} className="cursor-pointer">
+                        Cadastrar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               )}
             </div>
 
-            {/* Mobile menu button for small screens */}
+            {/* Mobile menu button */}
             <div className="lg:hidden">
               <Button
                 variant="ghost"
@@ -233,6 +263,29 @@ const Header = () => {
                   </>
                 ) : (
                   <>
+                    {/* Navigation for non-authenticated users */}
+                    <Link 
+                      to="/" 
+                      className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Início
+                    </Link>
+                    <Link 
+                      to="/articles" 
+                      className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Notícias
+                    </Link>
+                    <Link 
+                      to="/categories" 
+                      className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Categorias
+                    </Link>
+                    
                     {/* Login/Register buttons for non-authenticated users */}
                     <div className="pt-4 border-t border-slate-200 space-y-2">
                       <Button
