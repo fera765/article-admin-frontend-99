@@ -2,7 +2,7 @@
 import { API_CONFIG } from '@/config/api';
 
 class ApiClient {
-  private baseURL: string;
+  public baseURL: string;
 
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
@@ -59,6 +59,25 @@ class ApiClient {
     return this.request(API_CONFIG.ENDPOINTS.NEWSLETTER, {
       method: 'POST',
       body: JSON.stringify({ email, name }),
+    });
+  }
+
+  // Novos métodos para o dashboard admin
+  async verifyAdmin() {
+    return this.request('/private/me');
+  }
+
+  async getViewStats() {
+    return this.request('/views');
+  }
+
+  async getNewsletterStats() {
+    return this.request('/newsletter-subscriptions/stats');
+  }
+
+  async refreshStats() {
+    return this.request('/views/refresh', {
+      method: 'POST',
     });
   }
 }
