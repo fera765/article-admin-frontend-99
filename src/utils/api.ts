@@ -54,6 +54,13 @@ class ApiClient {
   async getActiveCategories() {
     return this.request(API_CONFIG.ENDPOINTS.CATEGORIES);
   }
+
+  async subscribeNewsletter(email: string, name: string) {
+    return this.request(API_CONFIG.ENDPOINTS.NEWSLETTER, {
+      method: 'POST',
+      body: JSON.stringify({ email, name }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

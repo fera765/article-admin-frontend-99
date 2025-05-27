@@ -6,6 +6,7 @@ export const API_CONFIG = {
     REGISTER: '/auth/register',
     CURRENT_USER: '/auth/me',
     ARTICLES: '/articles',
-    CATEGORIES: '/categories'
+    CATEGORIES: '/categories',
+    NEWSLETTER: '/newsletter/subscribe'
   }
 };
