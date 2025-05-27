@@ -42,6 +42,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const response = await apiClient.getCurrentUser();
           if (response.user) {
             setUser(response.user);
+            // Salvar dados do usuário no localStorage
+            localStorage.setItem('user', JSON.stringify(response.user));
           }
         } catch (error) {
           console.error('Failed to get current user:', error);
@@ -49,6 +51,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem('user');
           setToken(null);
           setUser(null);
+        }
+      } else {
+        // Tentar recuperar dados do usuário do localStorage
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch (error) {
+            console.error('Error parsing saved user data:', error);
+            localStorage.removeItem('user');
+          }
         }
       }
       setLoading(false);
@@ -64,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // A API retorna: token, name, email, avatar, role, total_favorites, total_likes
       const { token: newToken, ...userData } = response;
       
-      // Salvar token no localStorage
+      // Salvar token e dados do usuário no localStorage
       localStorage.setItem('token', newToken);
       localStorage.setItem('user', JSON.stringify(userData));
       
@@ -72,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(newToken);
       setUser(userData);
       
+      // Toast de sucesso com nome do usuário
       toast({
         title: "Login realizado com sucesso!",
         description: `Bem-vindo de volta, ${userData.name}!`,
@@ -106,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    // Limpar localStorage completamente
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);

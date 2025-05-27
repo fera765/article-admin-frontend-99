@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Menu, X, User, Settings, LogOut, TrendingUp } from 'lucide-react';
+import { Menu, User, Settings, LogOut, TrendingUp } from 'lucide-react';
 
 // Função para gerar cor baseada na primeira letra
 const getAvatarColor = (name: string) => {
@@ -29,7 +29,7 @@ const getAvatarColor = (name: string) => {
 };
 
 const Header = () => {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isEditor, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -86,12 +86,12 @@ const Header = () => {
                   {/* User Avatar with Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-                        <Avatar className="h-10 w-10">
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 hover:bg-slate-100">
+                        <Avatar className="h-10 w-10 border-2 border-slate-200 hover:border-red-300 transition-colors">
                           {user?.avatar ? (
                             <AvatarImage src={user.avatar} alt={user.name} />
                           ) : null}
-                          <AvatarFallback className={`${getAvatarColor(user?.name || '')} text-white text-sm font-semibold`}>
+                          <AvatarFallback className={`${getAvatarColor(user?.name || '')} text-white text-sm font-semibold hover:opacity-90 transition-opacity`}>
                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
@@ -105,15 +105,14 @@ const Header = () => {
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      {isAdmin ? (
+                      <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        Perfil
+                      </DropdownMenuItem>
+                      {(isAdmin || isEditor) && (
                         <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
                           Admin
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
-                          <User className="mr-2 h-4 w-4" />
-                          Perfil
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
@@ -127,7 +126,7 @@ const Header = () => {
                   {/* Menu Button */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="hover:bg-slate-100">
                         <Menu className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -149,7 +148,7 @@ const Header = () => {
                   {/* Menu Button for non-authenticated users */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="hover:bg-slate-100">
                         <Menu className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -182,8 +181,9 @@ const Header = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="hover:bg-slate-100"
               >
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                <Menu className="h-6 w-6" />
               </Button>
             </div>
           </div>
@@ -194,6 +194,24 @@ const Header = () => {
               <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
                 {isAuthenticated ? (
                   <>
+                    {/* User info for mobile */}
+                    <div className="px-3 py-2 border-b border-slate-200 mb-2">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-8 w-8">
+                          {user?.avatar ? (
+                            <AvatarImage src={user.avatar} alt={user.name} />
+                          ) : null}
+                          <AvatarFallback className={`${getAvatarColor(user?.name || '')} text-white text-xs font-semibold`}>
+                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{user?.name}</p>
+                          <p className="text-xs text-slate-500">{user?.email}</p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Navigation items for authenticated users */}
                     <Link 
                       to="/" 
@@ -217,16 +235,23 @@ const Header = () => {
                       Categorias
                     </Link>
                     
-                    {/* User info and actions */}
-                    <div className="pt-4 border-t border-slate-200">
-                      <div className="px-3 py-2">
-                        <p className="text-sm font-medium text-slate-900">{user?.name}</p>
-                        <p className="text-sm text-slate-500">{user?.email}</p>
-                      </div>
-                      {isAdmin ? (
+                    {/* User actions */}
+                    <div className="pt-2 border-t border-slate-200 space-y-1">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start hover:bg-slate-50"
+                        onClick={() => {
+                          navigate('/profile');
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Perfil
+                      </Button>
+                      {(isAdmin || isEditor) && (
                         <Button
                           variant="ghost"
-                          className="w-full justify-start"
+                          className="w-full justify-start hover:bg-slate-50"
                           onClick={() => {
                             navigate('/admin');
                             setMobileMenuOpen(false);
@@ -235,22 +260,10 @@ const Header = () => {
                           <Settings className="mr-2 h-4 w-4" />
                           Admin
                         </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            navigate('/profile');
-                            setMobileMenuOpen(false);
-                          }}
-                        >
-                          <User className="mr-2 h-4 w-4" />
-                          Perfil
-                        </Button>
                       )}
                       <Button
                         variant="ghost"
-                        className="w-full justify-start text-red-600"
+                        className="w-full justify-start text-red-600 hover:bg-red-50"
                         onClick={() => {
                           handleLogout();
                           setMobileMenuOpen(false);
@@ -287,10 +300,10 @@ const Header = () => {
                     </Link>
                     
                     {/* Login/Register buttons for non-authenticated users */}
-                    <div className="pt-4 border-t border-slate-200 space-y-2">
+                    <div className="pt-2 border-t border-slate-200 space-y-2">
                       <Button
                         variant="ghost"
-                        className="w-full"
+                        className="w-full hover:bg-slate-50"
                         onClick={() => {
                           navigate('/login');
                           setMobileMenuOpen(false);
