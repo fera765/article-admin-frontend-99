@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/utils/api';
 import { Article, Category } from '@/types';
-import { Calendar, User, Search, ArrowRight, Filter } from 'lucide-react';
+import { Calendar, User, Search, ArrowRight, Filter, Clock, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const ArticlesPage = () => {
@@ -87,9 +87,16 @@ const ArticlesPage = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: 'numeric',
-      month: 'long',
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric'
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -105,69 +112,71 @@ const ArticlesPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando artigos...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600 font-medium">Carregando notícias...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-slate-50">
+      {/* Page Header */}
+      <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Todos os Artigos
+          <div className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+              Todas as Notícias
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore nossa coleção completa de artigos sobre tecnologia, desenvolvimento e inovação.
+            <p className="text-lg text-slate-600">
+              Mantenha-se atualizado com as últimas notícias do mercado financeiro
             </p>
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar artigos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="bg-slate-50 rounded-lg p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar notícias..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white border-slate-300 focus:border-red-500 focus:ring-red-500"
+                />
+              </div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="md:w-64 bg-white border-slate-300">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Todas as categorias" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="md:w-64">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Todas as categorias" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>
 
       {/* Articles Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {articles.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
+          <div className="text-center py-16">
+            <div className="text-slate-400 mb-4">
               <Search className="h-16 w-16 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Nenhum artigo encontrado
+            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+              Nenhuma notícia encontrada
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-600 mb-6">
               Tente ajustar seus filtros ou termos de busca.
             </p>
             <Button
@@ -177,92 +186,135 @@ const ArticlesPage = () => {
                 setSelectedCategory('all');
                 setCurrentPage(1);
               }}
+              className="border-red-600 text-red-600 hover:bg-red-50"
             >
               Limpar filtros
             </Button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {articles.map((article) => (
-                <Card key={article.id} className="group hover:shadow-lg transition-all duration-300 bg-white">
-                  <div className="aspect-video relative overflow-hidden">
-                    <img
-                      src={article.imageUrl || '/placeholder.svg'}
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    {article.isDetach && (
-                      <div className="absolute top-3 left-3">
-                        <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                          Destaque
+            {/* Featured Articles */}
+            {articles.filter(article => article.isDetach).length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6 border-l-4 border-red-600 pl-3">
+                  Notícias em Destaque
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {articles.filter(article => article.isDetach).slice(0, 3).map((article) => (
+                    <Card key={article.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
+                      <div className="aspect-video relative overflow-hidden">
+                        <img
+                          src={article.imageUrl || '/placeholder.svg'}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-red-600 text-white">
+                            DESTAQUE
+                          </Badge>
+                        </div>
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="mb-3">
+                          <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-700">
+                            {getCategoryName(article.category)}
+                          </Badge>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-3 line-clamp-2 group-hover:text-red-600 transition-colors">
+                          <Link to={`/articles/${article.id}`}>
+                            {article.title}
+                          </Link>
+                        </h3>
+                        <p className="text-slate-600 text-sm mb-4 line-clamp-2">
+                          {article.summary}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{formatTime(article.publishDate)}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3" />
+                              <span>{formatDate(article.publishDate)}</span>
+                            </div>
+                          </div>
+                          <Link 
+                            to={`/articles/${article.id}`}
+                            className="flex items-center space-x-1 text-red-600 hover:text-red-700 font-medium"
+                          >
+                            <span>Ler</span>
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All Articles */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-6 border-l-4 border-red-600 pl-3">
+                Últimas Notícias
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {articles.filter(article => !article.isDetach).map((article) => (
+                  <Card key={article.id} className="group hover:shadow-lg transition-all duration-300 bg-white border-slate-200">
+                    <div className="aspect-video relative overflow-hidden">
+                      <img
+                        src={article.imageUrl || '/placeholder.svg'}
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <div className="mb-2">
+                        <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-700">
+                          {getCategoryName(article.category)}
                         </Badge>
                       </div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {getCategoryName(article.category)}
-                      </Badge>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                      <Link to={`/articles/${article.id}`}>
-                        {article.title}
-                      </Link>
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {article.summary}
-                    </p>
-                    
-                    {/* Tags */}
-                    {article.tags && article.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {article.tags.slice(0, 3).map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {article.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{article.tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{formatDate(article.publishDate)}</span>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
+                        <Link to={`/articles/${article.id}`}>
+                          {article.title}
+                        </Link>
+                      </h3>
+                      <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+                        {article.summary}
+                      </p>
+                      
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{formatTime(article.publishDate)}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <User className="h-3 w-3" />
-                          <span>Autor</span>
-                        </div>
+                        <Link 
+                          to={`/articles/${article.id}`}
+                          className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-1"
+                        >
+                          <span>Ler</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
                       </div>
-                      <Link 
-                        to={`/articles/${article.id}`}
-                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        <span>Ler</span>
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-12">
+              <div className="flex justify-center">
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     disabled={currentPage === 1}
                     onClick={() => handlePageChange(currentPage - 1)}
+                    className="border-slate-300 text-slate-700"
                   >
                     Anterior
                   </Button>
@@ -274,7 +326,7 @@ const ArticlesPage = () => {
                         key={page}
                         variant={currentPage === page ? "default" : "outline"}
                         onClick={() => handlePageChange(page)}
-                        className="w-10"
+                        className={currentPage === page ? "bg-red-600 hover:bg-red-700" : "border-slate-300 text-slate-700"}
                       >
                         {page}
                       </Button>
@@ -285,6 +337,7 @@ const ArticlesPage = () => {
                     variant="outline"
                     disabled={currentPage === totalPages}
                     onClick={() => handlePageChange(currentPage + 1)}
+                    className="border-slate-300 text-slate-700"
                   >
                     Próxima
                   </Button>
