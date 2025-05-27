@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Menu, X, User, Settings, LogOut, TrendingUp } from 'lucide-react';
 
 const Header = () => {
@@ -64,28 +64,7 @@ const Header = () => {
               </div>
             </Link>
 
-            {/* Desktop Navigation - Only show when authenticated */}
-            {isAuthenticated && (
-              <nav className="hidden lg:flex items-center space-x-8">
-                <Link to="/" className="text-slate-700 hover:text-red-600 font-medium transition-colors border-b-2 border-transparent hover:border-red-600 pb-1">
-                  Início
-                </Link>
-                <Link to="/articles" className="text-slate-700 hover:text-red-600 font-medium transition-colors border-b-2 border-transparent hover:border-red-600 pb-1">
-                  Notícias
-                </Link>
-                <Link to="/categories" className="text-slate-700 hover:text-red-600 font-medium transition-colors border-b-2 border-transparent hover:border-red-600 pb-1">
-                  Mercados
-                </Link>
-                <Link to="/analysis" className="text-slate-700 hover:text-red-600 font-medium transition-colors border-b-2 border-transparent hover:border-red-600 pb-1">
-                  Análises
-                </Link>
-                <Link to="/about" className="text-slate-700 hover:text-red-600 font-medium transition-colors border-b-2 border-transparent hover:border-red-600 pb-1">
-                  Sobre
-                </Link>
-              </nav>
-            )}
-
-            {/* Right Side Actions */}
+            {/* Desktop Right Side */}
             <div className="hidden lg:flex items-center space-x-4">
               {isAuthenticated ? (
                 <>
@@ -94,6 +73,9 @@ const Header = () => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                         <Avatar className="h-10 w-10">
+                          {user?.avatar ? (
+                            <AvatarImage src={user.avatar} alt={user.name} />
+                          ) : null}
                           <AvatarFallback className="bg-gradient-to-r from-red-600 to-red-700 text-white text-sm">
                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                           </AvatarFallback>
@@ -108,18 +90,16 @@ const Header = () => {
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        Perfil
-                      </DropdownMenuItem>
-                      {isAdmin && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" />
-                            Administrador
-                          </DropdownMenuItem>
-                        </>
+                      {isAdmin ? (
+                        <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
+                          <Settings className="mr-2 h-4 w-4" />
+                          Admin
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          Perfil
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
@@ -142,7 +122,7 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  {/* Show login/register buttons only when not authenticated */}
+                  {/* Login/Register buttons for non-authenticated users */}
                   <div className="flex items-center space-x-3">
                     <Button variant="ghost" onClick={() => navigate('/login')} className="text-slate-700 hover:text-red-600">
                       Entrar
@@ -204,21 +184,7 @@ const Header = () => {
                       className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Mercados
-                    </Link>
-                    <Link 
-                      to="/analysis" 
-                      className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Análises
-                    </Link>
-                    <Link 
-                      to="/about" 
-                      className="block px-3 py-2 text-slate-700 hover:text-red-600 hover:bg-slate-50 rounded-md"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Sobre
+                      Categorias
                     </Link>
                     
                     {/* User info and actions */}
@@ -227,18 +193,7 @@ const Header = () => {
                         <p className="text-sm font-medium text-slate-900">{user?.name}</p>
                         <p className="text-sm text-slate-500">{user?.email}</p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start"
-                        onClick={() => {
-                          navigate('/profile');
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        Perfil
-                      </Button>
-                      {isAdmin && (
+                      {isAdmin ? (
                         <Button
                           variant="ghost"
                           className="w-full justify-start"
@@ -248,7 +203,19 @@ const Header = () => {
                           }}
                         >
                           <Settings className="mr-2 h-4 w-4" />
-                          Administrador
+                          Admin
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            navigate('/profile');
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          Perfil
                         </Button>
                       )}
                       <Button

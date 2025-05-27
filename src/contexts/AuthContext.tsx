@@ -3,8 +3,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 
+interface User {
+  name: string;
+  email: string;
+  avatar?: string;
+  role: string;
+  total_favorites: number;
+  total_likes: number;
+}
+
 interface AuthContextType {
-  user: any | null;
+  user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
@@ -18,7 +27,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
@@ -31,11 +40,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         try {
           const response = await apiClient.getCurrentUser();
-          setUser(response.user);
+          if (response.user) {
+            setUser(response.user);
+          }
         } catch (error) {
           console.error('Failed to get current user:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           setToken(null);
+          setUser(null);
         }
       }
       setLoading(false);
@@ -47,18 +60,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       const response = await apiClient.login(email, password);
-      const newToken = response.token;
       
+      // A API retorna: token, name, email, avatar, role, total_favorites, total_likes
+      const { token: newToken, ...userData } = response;
+      
+      // Salvar token no localStorage
       localStorage.setItem('token', newToken);
-      setToken(newToken);
+      localStorage.setItem('user', JSON.stringify(userData));
       
-      // Get user info
-      const userResponse = await apiClient.getCurrentUser();
-      setUser(userResponse.user);
+      // Atualizar estado
+      setToken(newToken);
+      setUser(userData);
       
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo de volta!",
+        description: `Bem-vindo de volta, ${userData.name}!`,
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -91,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     toast({
