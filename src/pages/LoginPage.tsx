@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, EyeOff, TrendingUp, BarChart3, DollarSign, Lock } from 'lucide-react';
+import { Eye, EyeOff, Building2, Shield, ArrowRight } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -34,20 +34,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+      {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-100/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-100/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-slate-500/5 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      {/* Floating Icons */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <TrendingUp className="absolute top-20 left-1/4 w-8 h-8 text-emerald-300/40 animate-pulse" />
-        <BarChart3 className="absolute top-40 right-1/4 w-6 h-6 text-blue-300/40 animate-pulse delay-1000" />
-        <DollarSign className="absolute bottom-40 left-1/3 w-7 h-7 text-indigo-300/40 animate-pulse delay-2000" />
-      </div>
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(30,58,138,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(30,58,138,0.1)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
 
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
@@ -55,31 +51,33 @@ const LoginPage = () => {
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center space-x-3 mb-8 group">
               <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <span className="text-white font-bold text-xl">FN</span>
+                <div className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:shadow-blue-500/25 transition-all duration-300 border border-blue-500/20">
+                  <Building2 className="w-7 h-7 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
               </div>
               <div className="text-left">
-                <span className="block text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                <span className="block text-3xl font-bold bg-gradient-to-r from-white via-blue-100 to-indigo-200 bg-clip-text text-transparent">
                   FinanceNews
                 </span>
-                <span className="block text-xs text-slate-500 font-medium">FINANCIAL PORTAL</span>
+                <span className="block text-xs text-blue-300/80 font-semibold tracking-widest uppercase">
+                  Portal Financeiro
+                </span>
               </div>
             </Link>
           </div>
 
           {/* Login Card */}
-          <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-xl">
+          <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-xl border border-white/20">
             <CardHeader className="text-center pb-6 pt-8">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <Lock className="w-8 h-8 text-blue-600" />
+              <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100">
+                <Shield className="w-8 h-8 text-blue-600" />
               </div>
-              <CardTitle className="text-2xl font-bold text-slate-800">
-                Área Restrita
+              <CardTitle className="text-2xl font-bold text-slate-800 mb-2">
+                Acesso Restrito
               </CardTitle>
               <CardDescription className="text-slate-600 text-base">
-                Acesse sua conta para continuar navegando
+                Entre com suas credenciais para acessar o portal
               </CardDescription>
             </CardHeader>
             
@@ -87,7 +85,7 @@ const LoginPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
-                    Email Corporativo
+                    Email
                   </Label>
                   <Input
                     id="email"
@@ -96,13 +94,13 @@ const LoginPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white/80 backdrop-blur-sm"
+                    className="h-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white/90 backdrop-blur-sm transition-all duration-200"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
-                    Senha de Acesso
+                    Senha
                   </Label>
                   <div className="relative">
                     <Input
@@ -112,7 +110,7 @@ const LoginPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="h-12 pr-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white/80 backdrop-blur-sm"
+                      className="h-12 pr-12 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 bg-white/90 backdrop-blur-sm transition-all duration-200"
                     />
                     <button
                       type="button"
@@ -130,16 +128,19 @@ const LoginPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg hover:shadow-blue-500/25 transition-all duration-300 border-0"
                   disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <span>Acessando...</span>
+                      <span>Autenticando...</span>
                     </div>
                   ) : (
-                    'Acessar Plataforma'
+                    <div className="flex items-center space-x-2">
+                      <span>Entrar no Portal</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
                   )}
                 </Button>
               </form>
@@ -147,13 +148,13 @@ const LoginPage = () => {
               <div className="mt-8 pt-6 border-t border-slate-100">
                 <div className="text-center">
                   <p className="text-sm text-slate-600 mb-4">
-                    Ainda não possui acesso?
+                    Ainda não possui conta?
                   </p>
                   <Link
                     to="/register"
-                    className="inline-flex items-center px-6 py-3 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-400 transition-all duration-200"
+                    className="inline-flex items-center px-6 py-3 border-2 border-blue-200 rounded-xl text-sm font-medium text-blue-700 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-300 transition-all duration-200"
                   >
-                    Solicitar Credenciais
+                    Criar Nova Conta
                   </Link>
                 </div>
               </div>
@@ -161,19 +162,22 @@ const LoginPage = () => {
               <div className="mt-6 text-center">
                 <Link
                   to="/"
-                  className="inline-flex items-center text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                  className="inline-flex items-center text-sm text-slate-500 hover:text-blue-600 transition-colors"
                 >
-                  <span>← Voltar ao portal principal</span>
+                  <span>← Voltar ao portal</span>
                 </Link>
               </div>
             </CardContent>
           </Card>
 
-          {/* Footer Info */}
+          {/* Security Badge */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-slate-500">
-              Plataforma segura protegida por criptografia SSL
-            </p>
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <p className="text-xs text-white/80 font-medium">
+                Conexão segura SSL
+              </p>
+            </div>
           </div>
         </div>
       </div>
