@@ -59,6 +59,7 @@ const RegisterPage = () => {
 
     try {
       await register(name, email, password);
+      // Redirecionar para login após cadastro bem-sucedido
       navigate('/login', {
         state: { message: 'Conta criada com sucesso! Faça login para continuar.' }
       });

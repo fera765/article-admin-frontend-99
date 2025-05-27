@@ -17,15 +17,14 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       await login(email, password);
-      navigate(from, { replace: true });
+      // Redirecionar para home após login bem-sucedido
+      navigate('/', { replace: true });
     } catch (error) {
       // Error handling is done in the AuthContext
     } finally {
@@ -76,6 +75,13 @@ const LoginPage = () => {
               </div>
             </Link>
           </div>
+
+          {/* Success Message */}
+          {location.state?.message && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800 text-center">{location.state.message}</p>
+            </div>
+          )}
 
           {/* Login Card */}
           <Card className="border border-slate-200 shadow-xl bg-white">
