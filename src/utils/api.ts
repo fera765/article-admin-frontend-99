@@ -15,6 +15,12 @@ class ApiClient {
     return response.data;
   }
 
+  // Add the missing post method
+  async post(url: string, data?: any) {
+    const response = await api.post(url, data);
+    return response.data;
+  }
+
   async login(email: string, password: string) {
     const response = await api.post(API_CONFIG.ENDPOINTS.LOGIN, { email, password });
     return response.data;
