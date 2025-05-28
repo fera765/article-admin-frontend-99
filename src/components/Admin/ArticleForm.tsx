@@ -8,10 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useCategories } from '@/hooks/useCategories';
+import { useEditors } from '@/hooks/useEditors';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 import { Article } from '@/types';
-import RichTextEditor from './RichTextEditor';
+import LazyRichTextEditor from './LazyRichTextEditor';
 import ImageUpload from './ImageUpload';
 import TagsInput from './TagsInput';
 import AuthorSelect from './AuthorSelect';
@@ -25,8 +26,16 @@ interface ArticleFormProps {
 
 const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const { data: categoriesData } = useCategories();
+  const [formReady, setFormReady] = useState(false);
+  
+  const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategories();
+  const { data: editorsData = [], isLoading: editorsLoading, error: editorsError } = useEditors();
+  
   const categories = categoriesData?.categories || [];
+
+  console.log('ArticleForm render - Categories:', categories.length, 'Editors:', editorsData.length);
+  console.log('Loading states - Categories:', categoriesLoading, 'Editors:', editorsLoading);
+  console.log('Errors - Categories:', categoriesError, 'Editors:', editorsError);
 
   const form = useForm({
     defaultValues: {
@@ -45,6 +54,15 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
 
   const { watch, setValue } = form;
   const formValues = watch();
+
+  // Wait for dependencies to load before showing form
+  useEffect(() => {
+    console.log('Checking form readiness...');
+    if (!categoriesLoading && !editorsLoading) {
+      console.log('Dependencies loaded, form ready');
+      setFormReady(true);
+    }
+  }, [categoriesLoading, editorsLoading]);
 
   // Helper function to check if content has meaningful text
   const hasValidContent = (content: string) => {
@@ -110,14 +128,38 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
     }
   };
 
+  // Show loading state while dependencies are loading
+  if (!formReady) {
+    return (
+      <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
+            <p className="text-slate-600">Carregando formulário...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there are critical errors
+  if (categoriesError || editorsError) {
+    return (
+      <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Erro ao carregar dados necessários</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Tentar novamente
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-h-[80vh] overflow-y-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          {article ? 'Editar Artigo' : 'Novo Artigo'}
-        </h2>
-      </div>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -164,7 +206,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <RichTextEditor
+                  <LazyRichTextEditor
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Digite o conteúdo completo do artigo"

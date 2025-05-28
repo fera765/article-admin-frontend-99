@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useArticles } from '@/hooks/useArticles';
 import { useCategories } from '@/hooks/useCategories';
@@ -96,12 +97,14 @@ const AdminArticles: React.FC = () => {
   };
 
   const handleNewArticle = () => {
+    console.log('Opening new article form...');
     setEditingArticle(null);
     setIsFormOpen(true);
   };
 
   const handleEditArticle = async (article: Article) => {
     try {
+      console.log('Loading article for editing:', article.id);
       const response = await fetch(`${apiClient.baseURL}/articles/${article.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -110,6 +113,7 @@ const AdminArticles: React.FC = () => {
       
       if (response.ok) {
         const fullArticle = await response.json();
+        console.log('Article loaded successfully:', fullArticle);
         setEditingArticle(fullArticle);
         setIsFormOpen(true);
       } else {
@@ -173,14 +177,26 @@ const AdminArticles: React.FC = () => {
   };
 
   const handleFormSuccess = () => {
+    console.log('Form submitted successfully, closing dialog...');
     setIsFormOpen(false);
     setEditingArticle(null);
     queryClient.invalidateQueries({ queryKey: ['articles'] });
   };
 
   const handleFormCancel = () => {
+    console.log('Form cancelled, closing dialog...');
     setIsFormOpen(false);
     setEditingArticle(null);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    console.log('Dialog open change:', open);
+    if (!open) {
+      setIsFormOpen(false);
+      setEditingArticle(null);
+    } else {
+      setIsFormOpen(true);
+    }
   };
 
   if (articlesLoading) {
@@ -381,23 +397,20 @@ const AdminArticles: React.FC = () => {
       </div>
 
       {/* Article Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsFormOpen(false);
-          setEditingArticle(null);
-        }
-      }}>
+      <Dialog open={isFormOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingArticle ? 'Editar Artigo' : 'Novo Artigo'}
             </DialogTitle>
           </DialogHeader>
-          <ArticleForm
-            article={editingArticle}
-            onSuccess={handleFormSuccess}
-            onCancel={handleFormCancel}
-          />
+          {isFormOpen && (
+            <ArticleForm
+              article={editingArticle}
+              onSuccess={handleFormSuccess}
+              onCancel={handleFormCancel}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

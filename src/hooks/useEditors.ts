@@ -18,7 +18,9 @@ export const useEditors = () => {
     queryKey: ['editors'],
     queryFn: async (): Promise<Editor[]> => {
       try {
+        console.log('Fetching editors...');
         const response = await apiClient.get('/auth/editors');
+        console.log('Editors response:', response);
         return Array.isArray(response) ? response : [];
       } catch (error) {
         console.error('Error fetching editors:', error);
@@ -26,5 +28,7 @@ export const useEditors = () => {
       }
     },
     refetchInterval: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    retryDelay: 1000,
   });
 };
