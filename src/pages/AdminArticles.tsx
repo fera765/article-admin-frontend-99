@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Table, 
   TableBody, 
@@ -381,8 +381,18 @@ const AdminArticles: React.FC = () => {
       </div>
 
       {/* Article Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsFormOpen(false);
+          setEditingArticle(null);
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingArticle ? 'Editar Artigo' : 'Novo Artigo'}
+            </DialogTitle>
+          </DialogHeader>
           <ArticleForm
             article={editingArticle}
             onSuccess={handleFormSuccess}
