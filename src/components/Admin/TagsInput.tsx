@@ -24,8 +24,10 @@ const TagsInput: React.FC<TagsInputProps> = ({
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
+      e.stopPropagation();
       addTag();
     } else if (e.key === 'Backspace' && inputValue === '' && value.length > 0) {
+      e.preventDefault();
       removeTag(value.length - 1);
     }
   };
@@ -35,20 +37,28 @@ const TagsInput: React.FC<TagsInputProps> = ({
     if (tag && !value.includes(tag)) {
       onChange([...value, tag]);
       setInputValue('');
-      // Manter o foco no input após adicionar a tag
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
     }
+    // Force focus back to input
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   };
 
   const removeTag = (index: number) => {
     const newTags = value.filter((_, i) => i !== index);
     onChange(newTags);
-    // Manter o foco no input após remover a tag
-    setTimeout(() => {
+    // Force focus back to input
+    requestAnimationFrame(() => {
       inputRef.current?.focus();
-    }, 0);
+    });
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Only add tag on blur if we're not clicking on a remove button
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (!relatedTarget || !relatedTarget.closest('[data-tag-remove]')) {
+      addTag();
+    }
   };
 
   return (
@@ -59,8 +69,9 @@ const TagsInput: React.FC<TagsInputProps> = ({
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        onBlur={addTag}
+        onBlur={handleBlur}
         placeholder={placeholder}
+        autoComplete="off"
       />
       
       {value.length > 0 && (
@@ -70,8 +81,13 @@ const TagsInput: React.FC<TagsInputProps> = ({
               {tag}
               <button
                 type="button"
-                onClick={() => removeTag(index)}
-                className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                data-tag-remove
+                onClick={(e) => {
+                  e.preventDefault();
+                  removeTag(index);
+                }}
+                className="ml-1 hover:bg-gray-300 rounded-full p-0.5 focus:outline-none"
+                tabIndex={-1}
               >
                 <X className="h-3 w-3" />
               </button>

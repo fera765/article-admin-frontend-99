@@ -1,20 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Select from 'react-select';
 import { Label } from '@/components/ui/label';
-import { apiClient } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
-
-interface Editor {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: 'admin' | 'editor';
-  status: 'active';
-  createdAt: string;
-  updatedAt: string;
-}
+import { useEditors } from '@/hooks/useEditors';
 
 interface AuthorSelectProps {
   value: string;
@@ -27,29 +15,7 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
   onChange, 
   label = "Autor" 
 }) => {
-  const [editors, setEditors] = useState<Editor[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    loadEditors();
-  }, []);
-
-  const loadEditors = async () => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get('/auth/editors');
-      setEditors(response || []);
-    } catch (error) {
-      console.error('Error loading editors:', error);
-      toast({
-        title: 'Erro ao carregar editores',
-        description: 'Não foi possível carregar a lista de editores.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: editors = [], isLoading } = useEditors();
 
   const options = editors.map(editor => ({
     value: editor.name,
@@ -81,7 +47,7 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
         onChange={(option) => onChange(option?.value || '')}
         options={options}
         placeholder="Selecione um autor..."
-        isLoading={loading}
+        isLoading={isLoading}
         isClearable
         isSearchable
         styles={customStyles}

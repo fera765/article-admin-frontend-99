@@ -1,7 +1,8 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import '../../styles/quill-custom.css';
 import { Label } from '@/components/ui/label';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
@@ -20,6 +21,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   label = "Conteúdo" 
 }) => {
   const quillRef = useRef<ReactQuill>(null);
+
+  useEffect(() => {
+    // Ensure Quill is properly initialized
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      quill.root.setAttribute('data-placeholder', placeholder);
+    }
+  }, [placeholder]);
 
   const imageHandler = async () => {
     const input = document.createElement('input');
@@ -94,7 +103,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <div className="space-y-2">
       <Label>{label} *</Label>
-      <div className="bg-white border border-input rounded-md">
+      <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
         <ReactQuill
           ref={quillRef}
           theme="snow"
@@ -103,7 +112,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           modules={modules}
           formats={formats}
           placeholder={placeholder}
-          style={{ minHeight: '300px' }}
+          style={{ 
+            minHeight: '250px',
+            backgroundColor: 'white'
+          }}
         />
       </div>
     </div>

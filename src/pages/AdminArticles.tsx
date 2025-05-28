@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { useArticles } from '@/hooks/useArticles';
 import { useCategories } from '@/hooks/useCategories';
+import { useEditors } from '@/hooks/useEditors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -68,13 +68,15 @@ const AdminArticles: React.FC = () => {
   });
   
   const { data: categoriesData } = useCategories();
+  const { data: editorsData = [] } = useEditors();
   
   const articles = articlesData?.articles || [];
   const totalArticles = articlesData?.total || 0;
   const totalPages = Math.ceil(totalArticles / articlesPerPage);
   const categories = categoriesData?.categories || [];
   
-  const authors = Array.from(new Set(articles.map(article => article.author).filter(Boolean)));
+  // Use editors from the API instead of extracting from articles
+  const authors = editorsData.map(editor => editor.name);
   
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
