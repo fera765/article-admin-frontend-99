@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import '../../styles/quill-custom.css';
+// import '../../styles/quill-custom.css';
 import { Label } from '@/components/ui/label';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
@@ -22,60 +22,60 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const quillRef = useRef<ReactQuill>(null);
 
-  useEffect(() => {
-    if (quillRef.current) {
-      const quill = quillRef.current.getEditor();
-      quill.root.setAttribute('data-placeholder', placeholder);
-    }
-  }, [placeholder]);
+  // useEffect(() => {
+  //   if (quillRef.current) {
+  //     const quill = quillRef.current.getEditor();
+  //     quill.root.setAttribute('data-placeholder', placeholder);
+  //   }
+  // }, [placeholder]);
 
-  const imageHandler = async () => {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
+  // const imageHandler = async () => {
+  //   const input = document.createElement('input');
+  //   input.setAttribute('type', 'file');
+  //   input.setAttribute('accept', 'image/*');
+  //   input.click();
 
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (file) {
-        try {
-          const formData = new FormData();
-          formData.append('image', file);
+  //   input.onchange = async () => {
+  //     const file = input.files?.[0];
+  //     if (file) {
+  //       try {
+  //         const formData = new FormData();
+  //         formData.append('image', file);
 
-          const response = await fetch(`${apiClient.baseURL}/upload`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: formData,
-          });
+  //         const response = await fetch(`${apiClient.baseURL}/upload`, {
+  //           method: 'POST',
+  //           headers: {
+  //             Authorization: `Bearer ${localStorage.getItem('token')}`,
+  //           },
+  //           body: formData,
+  //         });
 
-          if (response.ok) {
-            const data = await response.json();
-            const quill = quillRef.current?.getEditor();
-            if (quill) {
-              const range = quill.getSelection();
-              const imageUrl = `${apiClient.baseURL}${data.url}`;
-              quill.insertEmbed(range?.index || 0, 'image', imageUrl);
-            }
-            toast({
-              title: 'Imagem enviada com sucesso!',
-              description: 'A imagem foi inserida no editor.',
-            });
-          } else {
-            throw new Error('Falha no upload');
-          }
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          toast({
-            title: 'Erro no upload da imagem',
-            description: 'Tente novamente.',
-            variant: 'destructive',
-          });
-        }
-      }
-    };
-  };
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           const quill = quillRef.current?.getEditor();
+  //           if (quill) {
+  //             const range = quill.getSelection();
+  //             const imageUrl = `${apiClient.baseURL}${data.url}`;
+  //             quill.insertEmbed(range?.index || 0, 'image', imageUrl);
+  //           }
+  //           toast({
+  //             title: 'Imagem enviada com sucesso!',
+  //             description: 'A imagem foi inserida no editor.',
+  //           });
+  //         } else {
+  //           throw new Error('Falha no upload');
+  //         }
+  //       } catch (error) {
+  //         console.error('Error uploading image:', error);
+  //         toast({
+  //           title: 'Erro no upload da imagem',
+  //           description: 'Tente novamente.',
+  //           variant: 'destructive',
+  //         });
+  //       }
+  //     }
+  //   };
+  // };
 
   const modules = {
     toolbar: {
@@ -90,9 +90,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ['blockquote', 'code-block'],
         ['clean']
       ],
-      handlers: {
-        image: imageHandler,
-      },
+      // handlers: {
+      //   image: imageHandler,
+      // },
     },
     clipboard: {
       matchVisual: false,
