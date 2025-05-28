@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useAdminStats, useTopArticles, useRefreshStats } from '@/hooks/useAdminData';
+import { useDashboardStats, useTopArticles, useRefreshStats } from '@/hooks/useDashboardData';
 import StatsCard from '@/components/Dashboard/StatsCard';
 import TopArticlesList from '@/components/Dashboard/TopArticlesList';
 import DashboardCharts from '@/components/Dashboard/DashboardCharts';
@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
     data: stats, 
     isLoading: statsLoading, 
     refetch: refetchStats 
-  } = useAdminStats();
+  } = useDashboardStats();
   
   const { 
     data: topArticles, 
@@ -47,6 +47,8 @@ const AdminDashboard: React.FC = () => {
       setRefreshing(false);
     }
   };
+
+  console.log('AdminDashboard renderizando:', { user, stats, topArticles });
 
   return (
     <div className="space-y-8">

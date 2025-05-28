@@ -36,9 +36,9 @@ const App = () => (
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             
-            {/* Protected admin routes with admin layout */}
+            {/* Protected admin routes */}
             <Route 
-              path="/admin/*" 
+              path="/admin" 
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminLayout />
