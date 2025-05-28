@@ -1,11 +1,21 @@
 
-import React, { useRef, useEffect, useCallback } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import '../../styles/quill-custom.css';
+import React, { useRef, useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
-import { apiClient } from '@/utils/api';
+import { Button } from '@/components/ui/button';
+import { 
+  Bold, 
+  Italic, 
+  Underline, 
+  List, 
+  ListOrdered, 
+  Link, 
+  Image,
+  AlignLeft,
+  AlignCenter,
+  AlignRight
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { apiClient } from '@/utils/api';
 
 interface RichTextEditorProps {
   value: string;
@@ -20,23 +30,36 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Digite o conteúdo completo do artigo",
   label = "Conteúdo" 
 }) => {
-  const quillRef = useRef<ReactQuill>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
+  // Sincronizar valor inicial
   useEffect(() => {
-    if (quillRef.current) {
-      const quill = quillRef.current.getEditor();
-      quill.root.setAttribute('data-placeholder', placeholder);
+    if (editorRef.current && value !== editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = value || '';
     }
-  }, [placeholder]);
+  }, [value]);
 
-  const imageHandler = async () => {
+  const handleInput = () => {
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      onChange(content);
+    }
+  };
+
+  const executeCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    editorRef.current?.focus();
+    handleInput();
+  };
+
+  const handleImageUpload = async () => {
     const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files?.[0];
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         try {
           const formData = new FormData();
@@ -52,12 +75,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
           if (response.ok) {
             const data = await response.json();
-            const quill = quillRef.current?.getEditor();
-            if (quill) {
-              const range = quill.getSelection();
-              const imageUrl = `${apiClient.baseURL}${data.url}`;
-              quill.insertEmbed(range?.index || 0, 'image', imageUrl);
-            }
+            const imageUrl = `${apiClient.baseURL}${data.url}`;
+            executeCommand('insertImage', imageUrl);
             toast({
               title: 'Imagem enviada com sucesso!',
               description: 'A imagem foi inserida no editor.',
@@ -75,78 +94,183 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         }
       }
     };
-  };
-
-  const modules = {
-    toolbar: {
-      container: [
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        ['link', 'image'],
-        [{ 'align': [] }],
-        [{ 'color': [] }, { 'background': [] }],
-        ['blockquote', 'code-block'],
-        ['clean']
-      ],
-      handlers: {
-        image: imageHandler,
-      },
-    },
-    clipboard: {
-      matchVisual: false,
-    },
-  };
-
-  const formats = [
-    'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'indent', 'link', 'image', 'align',
-    'color', 'background', 'blockquote', 'code-block'
-  ];
-
-  // Usar useCallback para evitar re-criação da função a cada render
-  const handleChange = useCallback((content: string) => {
-    console.log('RichTextEditor handleChange called with:', content?.length, 'characters');
     
-    // Evitar processamento desnecessário se o conteúdo não mudou realmente
-    if (content === value) {
-      console.log('Content unchanged, skipping update');
-      return;
+    input.click();
+  };
+
+  const insertLink = () => {
+    const url = prompt('Digite a URL do link:');
+    if (url) {
+      executeCommand('createLink', url);
     }
-    
-    // Limpar parágrafos vazios mas manter estrutura adequada
-    const cleanContent = content === '<p><br></p>' ? '' : content;
-    console.log('Calling onChange with cleaned content');
-    onChange(cleanContent);
-  }, [onChange, value]);
-
-  // Log para debug
-  console.log('RichTextEditor render - value length:', value?.length || 0);
+  };
 
   return (
     <div className="space-y-2">
       <Label htmlFor="content-editor">{label} *</Label>
-      <div className="bg-white border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-red-500 focus-within:border-red-500">
-        <ReactQuill
-          ref={quillRef}
-          theme="snow"
-          value={value || ''}
-          onChange={handleChange}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-          style={{ 
-            minHeight: '300px',
-            backgroundColor: 'white'
+      
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-1 p-2 border border-gray-300 rounded-t-md bg-gray-50">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('bold')}
+          className="h-8 w-8 p-0"
+        >
+          <Bold className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('italic')}
+          className="h-8 w-8 p-0"
+        >
+          <Italic className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('underline')}
+          className="h-8 w-8 p-0"
+        >
+          <Underline className="h-4 w-4" />
+        </Button>
+        
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('insertUnorderedList')}
+          className="h-8 w-8 p-0"
+        >
+          <List className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('insertOrderedList')}
+          className="h-8 w-8 p-0"
+        >
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('justifyLeft')}
+          className="h-8 w-8 p-0"
+        >
+          <AlignLeft className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('justifyCenter')}
+          className="h-8 w-8 p-0"
+        >
+          <AlignCenter className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => executeCommand('justifyRight')}
+          className="h-8 w-8 p-0"
+        >
+          <AlignRight className="h-4 w-4" />
+        </Button>
+        
+        <div className="w-px h-6 bg-gray-300 mx-1" />
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={insertLink}
+          className="h-8 w-8 p-0"
+        >
+          <Link className="h-4 w-4" />
+        </Button>
+        
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleImageUpload}
+          className="h-8 w-8 p-0"
+        >
+          <Image className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      {/* Editor */}
+      <div 
+        className={`border ${isFocused ? 'border-red-500 ring-2 ring-red-500' : 'border-gray-300'} rounded-b-md overflow-hidden bg-white`}
+      >
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={handleInput}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className="min-h-[300px] p-4 outline-none"
+          style={{
+            lineHeight: '1.6',
+            fontSize: '14px'
           }}
+          data-placeholder={!value ? placeholder : ''}
         />
       </div>
+      
       {!value && (
         <p className="text-sm text-gray-500 mt-1">
           Este campo é obrigatório
         </p>
       )}
+      
+      <style jsx>{`
+        [contenteditable]:empty:before {
+          content: attr(data-placeholder);
+          color: #9ca3af;
+          pointer-events: none;
+        }
+        
+        [contenteditable] img {
+          max-width: 100%;
+          height: auto;
+          margin: 8px 0;
+          border-radius: 4px;
+        }
+        
+        [contenteditable] ul, [contenteditable] ol {
+          margin: 12px 0;
+          padding-left: 24px;
+        }
+        
+        [contenteditable] p {
+          margin: 8px 0;
+        }
+        
+        [contenteditable] a {
+          color: #3b82f6;
+          text-decoration: underline;
+        }
+      `}</style>
     </div>
   );
 };
