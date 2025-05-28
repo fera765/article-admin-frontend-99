@@ -46,10 +46,33 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   const { watch, setValue } = form;
   const formValues = watch();
 
+  // Helper function to check if content has meaningful text
+  const hasValidContent = (content: string) => {
+    if (!content) return false;
+    // Remove HTML tags and check if there's actual text content
+    const textContent = content.replace(/<[^>]*>/g, '').trim();
+    return textContent.length > 0;
+  };
+
   // Verificar se campos obrigatórios estão preenchidos
-  const isFormValid = formValues.title && formValues.summary && formValues.content && formValues.category && formValues.author;
+  const isFormValid = 
+    formValues.title && 
+    formValues.summary && 
+    hasValidContent(formValues.content) && 
+    formValues.category && 
+    formValues.author;
 
   const onSubmit = async (data: any) => {
+    // Validate content before submission
+    if (!hasValidContent(data.content)) {
+      toast({
+        title: 'Conteúdo obrigatório',
+        description: 'O campo de conteúdo não pode estar vazio.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -57,6 +80,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
         ...data,
         publishDate: data.publishDate ? data.publishDate.toISOString() : new Date().toISOString(),
       };
+
+      console.log('Submitting article data:', articleData);
 
       if (article) {
         await apiClient.updateArticle(article.id, articleData);
@@ -98,6 +123,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
           <FormField
             control={form.control}
             name="title"
+            rules={{ required: 'O título é obrigatório' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Título *</FormLabel>
@@ -112,11 +138,16 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
           <FormField
             control={form.control}
             name="summary"
+            rules={{ required: 'O resumo é obrigatório' }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Resumo *</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Digite um resumo do artigo" {...field} />
+                  <Textarea 
+                    placeholder="Digite um resumo do artigo" 
+                    rows={3}
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -126,6 +157,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
           <FormField
             control={form.control}
             name="content"
+            rules={{ 
+              required: 'O conteúdo é obrigatório',
+              validate: (value) => hasValidContent(value) || 'O conteúdo não pode estar vazio'
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -145,6 +180,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             <FormField
               control={form.control}
               name="category"
+              rules={{ required: 'A categoria é obrigatória' }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categoria *</FormLabel>
@@ -170,6 +206,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             <FormField
               control={form.control}
               name="author"
+              rules={{ required: 'O autor é obrigatório' }}
               render={({ field }) => (
                 <FormItem>
                   <FormControl>

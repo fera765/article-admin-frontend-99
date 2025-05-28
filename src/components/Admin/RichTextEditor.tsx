@@ -23,7 +23,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const quillRef = useRef<ReactQuill>(null);
 
   useEffect(() => {
-    // Ensure Quill is properly initialized
     if (quillRef.current) {
       const quill = quillRef.current.getEditor();
       quill.root.setAttribute('data-placeholder', placeholder);
@@ -87,37 +86,55 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         [{ 'indent': '-1'}, { 'indent': '+1' }],
         ['link', 'image'],
         [{ 'align': [] }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['blockquote', 'code-block'],
         ['clean']
       ],
       handlers: {
         image: imageHandler,
       },
     },
+    clipboard: {
+      matchVisual: false,
+    },
   };
 
   const formats = [
     'header', 'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet', 'indent', 'link', 'image', 'align'
+    'list', 'bullet', 'indent', 'link', 'image', 'align',
+    'color', 'background', 'blockquote', 'code-block'
   ];
+
+  // Handle content change
+  const handleChange = (content: string) => {
+    // Remove empty paragraphs and clean up the content
+    const cleanContent = content === '<p><br></p>' ? '' : content;
+    onChange(cleanContent);
+  };
 
   return (
     <div className="space-y-2">
-      <Label>{label} *</Label>
-      <div className="bg-white border border-gray-300 rounded-md overflow-hidden">
+      <Label htmlFor="content-editor">{label} *</Label>
+      <div className="bg-white border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-red-500 focus-within:border-red-500">
         <ReactQuill
           ref={quillRef}
           theme="snow"
-          value={value}
-          onChange={onChange}
+          value={value || ''}
+          onChange={handleChange}
           modules={modules}
           formats={formats}
           placeholder={placeholder}
           style={{ 
-            minHeight: '250px',
+            minHeight: '300px',
             backgroundColor: 'white'
           }}
         />
       </div>
+      {!value && (
+        <p className="text-sm text-gray-500 mt-1">
+          Este campo é obrigatório
+        </p>
+      )}
     </div>
   );
 };
