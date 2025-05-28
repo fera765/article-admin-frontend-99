@@ -105,9 +105,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     'color', 'background', 'blockquote', 'code-block'
   ];
 
-  // Handle content change
+  // Handle content change without causing focus issues
   const handleChange = (content: string) => {
-    // Remove empty paragraphs and clean up the content
+    // Clean empty paragraphs but maintain proper content structure
     const cleanContent = content === '<p><br></p>' ? '' : content;
     onChange(cleanContent);
   };

@@ -12,7 +12,7 @@ import { useEditors } from '@/hooks/useEditors';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 import { Article } from '@/types';
-import LazyRichTextEditor from './LazyRichTextEditor';
+import RichTextEditor from './RichTextEditor';
 import ImageUpload from './ImageUpload';
 import TagsInput from './TagsInput';
 import AuthorSelect from './AuthorSelect';
@@ -206,7 +206,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <LazyRichTextEditor
+                  <RichTextEditor
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Digite o conteúdo completo do artigo"
