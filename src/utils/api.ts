@@ -1,3 +1,4 @@
+
 import api from '@/config/axios';
 import { API_CONFIG } from '@/config/api';
 
@@ -6,6 +7,12 @@ class ApiClient {
 
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
+  }
+
+  // Add the missing get method
+  async get(url: string) {
+    const response = await api.get(url);
+    return response.data;
   }
 
   async login(email: string, password: string) {
