@@ -22,28 +22,20 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
   const form = useForm({
     defaultValues: {
       name: category?.name || '',
-      slug: category?.slug || '',
       description: category?.description || '',
       active: category?.active ?? true,
     },
   });
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
   const onSubmit = async (data: any) => {
     try {
       setLoading(true);
       
+      // Send only the required fields: name, description, active
       const categoryData = {
-        ...data,
-        slug: data.slug || generateSlug(data.name),
+        name: data.name,
+        description: data.description,
+        active: data.active,
       };
 
       if (category) {
@@ -69,7 +61,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
           body: JSON.stringify(categoryData),
         });
         toast({
-          title: 'Categoria criada com sucesso!',
+          title: 'Categoria cadastrada com sucesso!',
           description: 'A nova categoria foi adicionada.',
         });
       }
@@ -107,27 +99,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
                   <Input 
                     placeholder="Digite o nome da categoria" 
                     {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      if (!category) {
-                        form.setValue('slug', generateSlug(e.target.value));
-                      }
-                    }}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Slug</FormLabel>
-                <FormControl>
-                  <Input placeholder="categoria-slug" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -139,7 +111,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Descrição</FormLabel>
+                <FormLabel>Descrição *</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Digite a descrição da categoria" {...field} />
                 </FormControl>
