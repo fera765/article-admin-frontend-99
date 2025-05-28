@@ -2,6 +2,7 @@
 import React, { useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { Label } from '@/components/ui/label';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 
@@ -9,9 +10,15 @@ interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  label?: string;
 }
 
-const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeholder }) => {
+const RichTextEditor: React.FC<RichTextEditorProps> = ({ 
+  value, 
+  onChange, 
+  placeholder = "Digite o conteúdo completo do artigo",
+  label = "Conteúdo" 
+}) => {
   const quillRef = useRef<ReactQuill>(null);
 
   const imageHandler = async () => {
@@ -40,7 +47,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
             const quill = quillRef.current?.getEditor();
             if (quill) {
               const range = quill.getSelection();
-              quill.insertEmbed(range?.index || 0, 'image', data.url);
+              const imageUrl = `${apiClient.baseURL}${data.url}`;
+              quill.insertEmbed(range?.index || 0, 'image', imageUrl);
             }
             toast({
               title: 'Imagem enviada com sucesso!',
@@ -84,17 +92,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, placeh
   ];
 
   return (
-    <div className="bg-white">
-      <ReactQuill
-        ref={quillRef}
-        theme="snow"
-        value={value}
-        onChange={onChange}
-        modules={modules}
-        formats={formats}
-        placeholder={placeholder}
-        className="min-h-64"
-      />
+    <div className="space-y-2">
+      <Label>{label} *</Label>
+      <div className="bg-white border border-input rounded-md">
+        <ReactQuill
+          ref={quillRef}
+          theme="snow"
+          value={value}
+          onChange={onChange}
+          modules={modules}
+          formats={formats}
+          placeholder={placeholder}
+          style={{ minHeight: '300px' }}
+        />
+      </div>
     </div>
   );
 };

@@ -128,12 +128,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Conteúdo *</FormLabel>
                 <FormControl>
                   <RichTextEditor
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Digite o conteúdo completo do artigo"
+                    label="Conteúdo"
                   />
                 </FormControl>
                 <FormMessage />
@@ -172,11 +172,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
               name="author"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Autor *</FormLabel>
                   <FormControl>
                     <AuthorSelect
                       value={field.value}
                       onChange={field.onChange}
+                      label="Autor"
                     />
                   </FormControl>
                   <FormMessage />

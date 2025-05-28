@@ -5,11 +5,15 @@ import { Label } from '@/components/ui/label';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 
-interface Author {
+interface Editor {
   id: string;
   name: string;
   email: string;
-  role: string;
+  avatar: string;
+  role: 'admin' | 'editor';
+  status: 'active';
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthorSelectProps {
@@ -23,23 +27,23 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
   onChange, 
   label = "Autor" 
 }) => {
-  const [authors, setAuthors] = useState<Author[]>([]);
+  const [editors, setEditors] = useState<Editor[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadAuthors();
+    loadEditors();
   }, []);
 
-  const loadAuthors = async () => {
+  const loadEditors = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get('/users?role=admin,editor');
-      setAuthors(response.data || []);
+      const response = await apiClient.get('/auth/editors');
+      setEditors(response || []);
     } catch (error) {
-      console.error('Error loading authors:', error);
+      console.error('Error loading editors:', error);
       toast({
-        title: 'Erro ao carregar autores',
-        description: 'Não foi possível carregar a lista de autores.',
+        title: 'Erro ao carregar editores',
+        description: 'Não foi possível carregar a lista de editores.',
         variant: 'destructive',
       });
     } finally {
@@ -47,9 +51,9 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
     }
   };
 
-  const options = authors.map(author => ({
-    value: author.name,
-    label: `${author.name} (${author.email})`,
+  const options = editors.map(editor => ({
+    value: editor.name,
+    label: `${editor.name} (${editor.email})`,
   }));
 
   const selectedOption = options.find(option => option.value === value);
@@ -71,7 +75,7 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label>{label} *</Label>
       <Select
         value={selectedOption}
         onChange={(option) => onChange(option?.value || '')}
@@ -81,8 +85,8 @@ const AuthorSelect: React.FC<AuthorSelectProps> = ({
         isClearable
         isSearchable
         styles={customStyles}
-        noOptionsMessage={() => 'Nenhum autor encontrado'}
-        loadingMessage={() => 'Carregando autores...'}
+        noOptionsMessage={() => 'Nenhum editor encontrado'}
+        loadingMessage={() => 'Carregando editores...'}
       />
     </div>
   );

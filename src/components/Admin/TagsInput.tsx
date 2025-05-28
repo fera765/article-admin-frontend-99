@@ -1,5 +1,5 @@
 
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ const TagsInput: React.FC<TagsInputProps> = ({
   placeholder = "Digite uma tag e pressione Enter"
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -34,18 +35,27 @@ const TagsInput: React.FC<TagsInputProps> = ({
     if (tag && !value.includes(tag)) {
       onChange([...value, tag]);
       setInputValue('');
+      // Manter o foco no input após adicionar a tag
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
   const removeTag = (index: number) => {
     const newTags = value.filter((_, i) => i !== index);
     onChange(newTags);
+    // Manter o foco no input após remover a tag
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
       <Input
+        ref={inputRef}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyDown}
