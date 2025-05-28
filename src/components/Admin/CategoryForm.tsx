@@ -1,14 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { apiClient } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
 import { Category } from '@/types';
+import { useCreateCategory, useUpdateCategory } from '@/hooks/useCategories';
 
 interface CategoryFormProps {
   category?: Category | null;
@@ -16,10 +15,17 @@ interface CategoryFormProps {
   onCancel: () => void;
 }
 
-const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCancel }) => {
-  const [loading, setLoading] = useState(false);
+interface CategoryFormData {
+  name: string;
+  description: string;
+  active: boolean;
+}
 
-  const form = useForm({
+const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCancel }) => {
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+
+  const form = useForm<CategoryFormData>({
     defaultValues: {
       name: category?.name || '',
       description: category?.description || '',
@@ -27,55 +33,32 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
     },
   });
 
-  const onSubmit = async (data: any) => {
+  const isLoading = createCategoryMutation.isPending || updateCategoryMutation.isPending;
+
+  const onSubmit = async (data: CategoryFormData) => {
     try {
-      setLoading(true);
-      
-      // Send only the required fields: name, description, active
+      // Validação básica
+      if (!data.name.trim() || !data.description.trim()) {
+        form.setError('name', { message: 'Nome é obrigatório' });
+        form.setError('description', { message: 'Descrição é obrigatória' });
+        return;
+      }
+
       const categoryData = {
-        name: data.name,
-        description: data.description,
+        name: data.name.trim(),
+        description: data.description.trim(),
         active: data.active,
       };
 
       if (category) {
-        await fetch(`${apiClient.baseURL}/categories/${category.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(categoryData),
-        });
-        toast({
-          title: 'Categoria atualizada com sucesso!',
-          description: 'As alterações foram salvas.',
-        });
+        await updateCategoryMutation.mutateAsync({ id: category.id, categoryData });
       } else {
-        await fetch(`${apiClient.baseURL}/categories`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(categoryData),
-        });
-        toast({
-          title: 'Categoria cadastrada com sucesso!',
-          description: 'A nova categoria foi adicionada.',
-        });
+        await createCategoryMutation.mutateAsync(categoryData);
       }
 
       onSuccess();
     } catch (error) {
       console.error('Error saving category:', error);
-      toast({
-        title: 'Erro ao salvar categoria',
-        description: 'Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -92,6 +75,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
           <FormField
             control={form.control}
             name="name"
+            rules={{ 
+              required: 'Nome é obrigatório',
+              minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' }
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nome *</FormLabel>
@@ -109,11 +96,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
           <FormField
             control={form.control}
             name="description"
+            rules={{ 
+              required: 'Descrição é obrigatória',
+              minLength: { value: 5, message: 'Descrição deve ter pelo menos 5 caracteres' }
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Descrição *</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Digite a descrição da categoria" {...field} />
+                  <Textarea 
+                    placeholder="Digite a descrição da categoria" 
+                    {...field} 
+                    rows={3}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -142,10 +137,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
           />
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700">
-              {loading ? 'Salvando...' : category ? 'Atualizar' : 'Criar'}
+            <Button 
+              type="submit" 
+              disabled={isLoading} 
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isLoading ? 'Salvando...' : category ? 'Atualizar' : 'Criar'}
             </Button>
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onCancel}
+              disabled={isLoading}
+            >
               Cancelar
             </Button>
           </div>

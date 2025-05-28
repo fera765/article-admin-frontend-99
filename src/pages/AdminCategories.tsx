@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategories, useDeleteCategory } from '@/hooks/useCategories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -29,9 +29,6 @@ import {
   Trash2,
   Calendar
 } from 'lucide-react';
-import { useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/utils/api';
-import { toast } from '@/hooks/use-toast';
 import { Category } from '@/types';
 import CategoryForm from '@/components/Admin/CategoryForm';
 import DeleteConfirmDialog from '@/components/Admin/DeleteConfirmDialog';
@@ -44,15 +41,13 @@ const AdminCategories: React.FC = () => {
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     category: Category | null;
-    loading: boolean;
   }>({
     open: false,
     category: null,
-    loading: false,
   });
   
   const categoriesPerPage = 20;
-  const queryClient = useQueryClient();
+  const deleteCategoryMutation = useDeleteCategory();
   
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
     search: searchTerm,
@@ -83,82 +78,32 @@ const AdminCategories: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleEditCategory = async (category: Category) => {
-    try {
-      const response = await fetch(`${apiClient.baseURL}/categories/${category.id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const fullCategory = await response.json();
-        setEditingCategory(fullCategory);
-        setIsFormOpen(true);
-      } else {
-        toast({
-          title: 'Erro ao carregar categoria',
-          description: 'Não foi possível carregar os dados da categoria.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error loading category:', error);
-      toast({
-        title: 'Erro ao carregar categoria',
-        description: 'Tente novamente.',
-        variant: 'destructive',
-      });
-    }
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setIsFormOpen(true);
   };
 
   const handleDeleteCategory = (category: Category) => {
     setDeleteDialog({
       open: true,
       category,
-      loading: false,
     });
   };
 
   const confirmDelete = async () => {
     if (!deleteDialog.category) return;
 
-    setDeleteDialog(prev => ({ ...prev, loading: true }));
-
     try {
-      const response = await fetch(`${apiClient.baseURL}/categories/${deleteDialog.category.id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Categoria excluída com sucesso!',
-          description: 'A categoria foi removida permanentemente.',
-        });
-        
-        queryClient.invalidateQueries({ queryKey: ['categories'] });
-        setDeleteDialog({ open: false, category: null, loading: false });
-      } else {
-        throw new Error('Failed to delete');
-      }
+      await deleteCategoryMutation.mutateAsync(deleteDialog.category.id);
+      setDeleteDialog({ open: false, category: null });
     } catch (error) {
       console.error('Error deleting category:', error);
-      toast({
-        title: 'Erro ao excluir categoria',
-        description: 'Tente novamente.',
-        variant: 'destructive',
-      });
-      setDeleteDialog(prev => ({ ...prev, loading: false }));
     }
   };
 
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     setEditingCategory(null);
-    queryClient.invalidateQueries({ queryKey: ['categories'] });
   };
 
   const handleFormCancel = () => {
@@ -266,6 +211,7 @@ const AdminCategories: React.FC = () => {
                         size="sm" 
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteCategory(category)}
+                        disabled={deleteCategoryMutation.isPending}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -335,11 +281,11 @@ const AdminCategories: React.FC = () => {
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
         open={deleteDialog.open}
-        onOpenChange={(open) => !deleteDialog.loading && setDeleteDialog(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => !deleteCategoryMutation.isPending && setDeleteDialog(prev => ({ ...prev, open }))}
         title="Excluir Categoria"
         description={`Tem certeza que deseja excluir a categoria "${deleteDialog.category?.name}"? Esta ação não pode ser desfeita.`}
         onConfirm={confirmDelete}
-        loading={deleteDialog.loading}
+        loading={deleteCategoryMutation.isPending}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 
+import api from '@/config/axios';
 import { API_CONFIG } from '@/config/api';
 
 class ApiClient {
@@ -8,77 +9,55 @@ class ApiClient {
     this.baseURL = API_CONFIG.BASE_URL;
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
-    const token = localStorage.getItem('token');
-    
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    const response = await fetch(`${this.baseURL}${endpoint}`, config);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
-  }
-
   async login(email: string, password: string) {
-    return this.request(API_CONFIG.ENDPOINTS.LOGIN, {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await api.post(API_CONFIG.ENDPOINTS.LOGIN, { email, password });
+    return response.data;
   }
 
   async register(name: string, email: string, password: string) {
-    return this.request(API_CONFIG.ENDPOINTS.REGISTER, {
-      method: 'POST',
-      body: JSON.stringify({ name, email, password }),
-    });
+    const response = await api.post(API_CONFIG.ENDPOINTS.REGISTER, { name, email, password });
+    return response.data;
   }
 
   async getCurrentUser() {
-    return this.request(API_CONFIG.ENDPOINTS.CURRENT_USER);
+    const response = await api.get(API_CONFIG.ENDPOINTS.CURRENT_USER);
+    return response.data;
   }
 
   async getArticles(page: number = 1, limit: number = 20) {
-    return this.request(`${API_CONFIG.ENDPOINTS.ARTICLES}?page=${page}&limit=${limit}`);
+    const response = await api.get(`${API_CONFIG.ENDPOINTS.ARTICLES}?page=${page}&limit=${limit}`);
+    return response.data;
   }
 
   async getActiveCategories() {
-    return this.request(API_CONFIG.ENDPOINTS.CATEGORIES);
+    const response = await api.get(API_CONFIG.ENDPOINTS.CATEGORIES);
+    return response.data;
   }
 
   async subscribeNewsletter(email: string, name: string) {
-    return this.request(API_CONFIG.ENDPOINTS.NEWSLETTER, {
-      method: 'POST',
-      body: JSON.stringify({ email, name }),
-    });
+    const response = await api.post(API_CONFIG.ENDPOINTS.NEWSLETTER, { email, name });
+    return response.data;
   }
 
   // Novos métodos para o dashboard admin
   async verifyAdmin() {
-    return this.request('/private/me');
+    const response = await api.get('/private/me');
+    return response.data;
   }
 
   async getViewStats() {
-    return this.request('/views');
+    const response = await api.get('/views');
+    return response.data;
   }
 
   async getNewsletterStats() {
-    return this.request('/newsletter-subscriptions/stats');
+    const response = await api.get('/newsletter-subscriptions/stats');
+    return response.data;
   }
 
   async refreshStats() {
-    return this.request('/views/refresh', {
-      method: 'POST',
-    });
+    const response = await api.post('/views/refresh');
+    return response.data;
   }
 }
 
