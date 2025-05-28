@@ -37,6 +37,7 @@ import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 import { Article } from '@/types';
 import ArticleForm from '@/components/Admin/ArticleForm';
+import ResponsiveArticleDialog from '@/components/Admin/ResponsiveArticleDialog';
 import DeleteConfirmDialog from '@/components/Admin/DeleteConfirmDialog';
 
 const AdminArticles: React.FC = () => {
@@ -74,8 +75,6 @@ const AdminArticles: React.FC = () => {
   const totalArticles = articlesData?.total || 0;
   const totalPages = Math.ceil(totalArticles / articlesPerPage);
   const categories = categoriesData?.categories || [];
-  
-  // Use editors from the API instead of extracting from articles
   const authors = editorsData.map(editor => editor.name);
   
   const handlePageChange = (page: number) => {
@@ -381,15 +380,13 @@ const AdminArticles: React.FC = () => {
       </div>
 
       {/* Article Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <ArticleForm
-            article={editingArticle}
-            onSuccess={handleFormSuccess}
-            onCancel={handleFormCancel}
-          />
-        </DialogContent>
-      </Dialog>
+      <ResponsiveArticleDialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <ArticleForm
+          article={editingArticle}
+          onSuccess={handleFormSuccess}
+          onCancel={handleFormCancel}
+        />
+      </ResponsiveArticleDialog>
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog
