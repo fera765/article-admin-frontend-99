@@ -4,6 +4,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   Table, 
   TableBody, 
@@ -28,12 +29,30 @@ import {
   Trash2,
   Calendar
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/utils/api';
+import { toast } from '@/hooks/use-toast';
+import { Category } from '@/types';
+import CategoryForm from '@/components/Admin/CategoryForm';
+import DeleteConfirmDialog from '@/components/Admin/DeleteConfirmDialog';
 
 const AdminCategories: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    category: Category | null;
+    loading: boolean;
+  }>({
+    open: false,
+    category: null,
+    loading: false,
+  });
   
   const categoriesPerPage = 20;
+  const queryClient = useQueryClient();
   
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
     search: searchTerm,
@@ -43,7 +62,6 @@ const AdminCategories: React.FC = () => {
   const totalCategories = categoriesData?.total || 0;
   const totalPages = Math.ceil(totalCategories / categoriesPerPage);
   
-  // Paginação local já que a API não suporta paginação nativa
   const startIndex = (currentPage - 1) * categoriesPerPage;
   const endIndex = startIndex + categoriesPerPage;
   const paginatedCategories = categories.slice(startIndex, endIndex);
@@ -58,6 +76,94 @@ const AdminCategories: React.FC = () => {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const handleNewCategory = () => {
+    setEditingCategory(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEditCategory = async (category: Category) => {
+    try {
+      const response = await fetch(`${apiClient.baseURL}/categories/${category.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const fullCategory = await response.json();
+        setEditingCategory(fullCategory);
+        setIsFormOpen(true);
+      } else {
+        toast({
+          title: 'Erro ao carregar categoria',
+          description: 'Não foi possível carregar os dados da categoria.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading category:', error);
+      toast({
+        title: 'Erro ao carregar categoria',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteCategory = (category: Category) => {
+    setDeleteDialog({
+      open: true,
+      category,
+      loading: false,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteDialog.category) return;
+
+    setDeleteDialog(prev => ({ ...prev, loading: true }));
+
+    try {
+      const response = await fetch(`${apiClient.baseURL}/categories/${deleteDialog.category.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Categoria excluída com sucesso!',
+          description: 'A categoria foi removida permanentemente.',
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        setDeleteDialog({ open: false, category: null, loading: false });
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast({
+        title: 'Erro ao excluir categoria',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
+      setDeleteDialog(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    setEditingCategory(null);
+    queryClient.invalidateQueries({ queryKey: ['categories'] });
+  };
+
+  const handleFormCancel = () => {
+    setIsFormOpen(false);
+    setEditingCategory(null);
   };
 
   if (categoriesLoading) {
@@ -79,7 +185,7 @@ const AdminCategories: React.FC = () => {
           </p>
         </div>
         
-        <Button className="bg-red-600 hover:bg-red-700 text-white">
+        <Button onClick={handleNewCategory} className="bg-red-600 hover:bg-red-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Nova Categoria
         </Button>
@@ -152,10 +258,15 @@ const AdminCategories: React.FC = () => {
                       <Button variant="ghost" size="sm">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditCategory(category)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleDeleteCategory(category)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -209,6 +320,27 @@ const AdminCategories: React.FC = () => {
       <div className="text-sm text-slate-500 text-center">
         Exibindo {paginatedCategories.length} de {totalCategories} categorias
       </div>
+
+      {/* Category Form Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-2xl">
+          <CategoryForm
+            category={editingCategory}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => !deleteDialog.loading && setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Excluir Categoria"
+        description={`Tem certeza que deseja excluir a categoria "${deleteDialog.category?.name}"? Esta ação não pode ser desfeita.`}
+        onConfirm={confirmDelete}
+        loading={deleteDialog.loading}
+      />
     </div>
   );
 };

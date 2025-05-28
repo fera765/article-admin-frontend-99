@@ -29,12 +29,27 @@ import {
   Mail,
   User
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/utils/api';
+import { toast } from '@/hooks/use-toast';
+import { NewsletterSubscription } from '@/types';
+import DeleteConfirmDialog from '@/components/Admin/DeleteConfirmDialog';
 
 const AdminNewsletter: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    subscription: NewsletterSubscription | null;
+    loading: boolean;
+  }>({
+    open: false,
+    subscription: null,
+    loading: false,
+  });
   
   const subscriptionsPerPage = 20;
+  const queryClient = useQueryClient();
   
   const { data: subscriptionsData, isLoading: subscriptionsLoading } = useNewsletterSubscriptions({
     search: searchTerm,
@@ -44,7 +59,6 @@ const AdminNewsletter: React.FC = () => {
   const totalSubscriptions = subscriptionsData?.total || 0;
   const totalPages = Math.ceil(totalSubscriptions / subscriptionsPerPage);
   
-  // Paginação local já que a API não suporta paginação nativa
   const startIndex = (currentPage - 1) * subscriptionsPerPage;
   const endIndex = startIndex + subscriptionsPerPage;
   const paginatedSubscriptions = subscriptions.slice(startIndex, endIndex);
@@ -87,6 +101,49 @@ const AdminNewsletter: React.FC = () => {
             {status}
           </Badge>
         );
+    }
+  };
+
+  const handleDeleteSubscription = (subscription: NewsletterSubscription) => {
+    setDeleteDialog({
+      open: true,
+      subscription,
+      loading: false,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteDialog.subscription) return;
+
+    setDeleteDialog(prev => ({ ...prev, loading: true }));
+
+    try {
+      const response = await fetch(`${apiClient.baseURL}/newsletter-subscriptions/${deleteDialog.subscription.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Inscrição excluída com sucesso!',
+          description: 'A inscrição foi removida permanentemente.',
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ['newsletter-subscriptions'] });
+        setDeleteDialog({ open: false, subscription: null, loading: false });
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch (error) {
+      console.error('Error deleting subscription:', error);
+      toast({
+        title: 'Erro ao excluir inscrição',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
+      setDeleteDialog(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -197,7 +254,12 @@ const AdminNewsletter: React.FC = () => {
                       <Button variant="ghost" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleDeleteSubscription(subscription)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -251,6 +313,16 @@ const AdminNewsletter: React.FC = () => {
       <div className="text-sm text-slate-500 text-center">
         Exibindo {paginatedSubscriptions.length} de {totalSubscriptions} inscrições
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => !deleteDialog.loading && setDeleteDialog(prev => ({ ...prev, open }))}
+        title="Excluir Inscrição"
+        description={`Tem certeza que deseja excluir a inscrição de "${deleteDialog.subscription?.name}" (${deleteDialog.subscription?.email})? Esta ação não pode ser desfeita.`}
+        onConfirm={confirmDelete}
+        loading={deleteDialog.loading}
+      />
     </div>
   );
 };
