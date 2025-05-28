@@ -6,12 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useCategories } from '@/hooks/useCategories';
 import { apiClient } from '@/utils/api';
 import { toast } from '@/hooks/use-toast';
 import { Article } from '@/types';
+import RichTextEditor from './RichTextEditor';
+import ImageUpload from './ImageUpload';
+import TagsInput from './TagsInput';
+import AuthorSelect from './AuthorSelect';
+import DateTimePicker from './DateTimePicker';
 
 interface ArticleFormProps {
   article?: Article | null;
@@ -32,12 +36,18 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
       category: article?.category || '',
       author: article?.author || '',
       imageUrl: article?.imageUrl || '',
-      tags: article?.tags?.join(', ') || '',
+      tags: article?.tags || [],
       status: article?.status || 'draft',
       isDetach: article?.isDetach || false,
-      publishDate: article?.publishDate ? new Date(article.publishDate).toISOString().split('T')[0] : '',
+      publishDate: article?.publishDate ? new Date(article.publishDate) : new Date(),
     },
   });
+
+  const { watch, setValue } = form;
+  const formValues = watch();
+
+  // Verificar se campos obrigatórios estão preenchidos
+  const isFormValid = formValues.title && formValues.summary && formValues.content && formValues.category && formValues.author;
 
   const onSubmit = async (data: any) => {
     try {
@@ -45,32 +55,17 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
       
       const articleData = {
         ...data,
-        tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [],
-        publishDate: data.publishDate ? new Date(data.publishDate).toISOString() : new Date().toISOString(),
+        publishDate: data.publishDate ? data.publishDate.toISOString() : new Date().toISOString(),
       };
 
       if (article) {
-        await fetch(`${apiClient.baseURL}/articles/${article.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(articleData),
-        });
+        await apiClient.updateArticle(article.id, articleData);
         toast({
           title: 'Artigo atualizado com sucesso!',
           description: 'As alterações foram salvas.',
         });
       } else {
-        await fetch(`${apiClient.baseURL}/articles`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: JSON.stringify(articleData),
-        });
+        await apiClient.createArticle(articleData);
         toast({
           title: 'Artigo criado com sucesso!',
           description: 'O novo artigo foi adicionado.',
@@ -91,7 +86,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">
           {article ? 'Editar Artigo' : 'Novo Artigo'}
@@ -99,7 +94,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
             name="title"
@@ -135,10 +130,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
               <FormItem>
                 <FormLabel>Conteúdo *</FormLabel>
                 <FormControl>
-                  <Textarea 
-                    placeholder="Digite o conteúdo completo do artigo" 
-                    className="min-h-32"
-                    {...field} 
+                  <RichTextEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Digite o conteúdo completo do artigo"
                   />
                 </FormControl>
                 <FormMessage />
@@ -146,7 +141,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="category"
@@ -179,7 +174,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
                 <FormItem>
                   <FormLabel>Autor *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do autor" {...field} />
+                    <AuthorSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,9 +190,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>URL da Imagem</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://..." {...field} />
+                  <ImageUpload
+                    value={field.value}
+                    onChange={field.onChange}
+                    label="Imagem de Capa"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,16 +207,18 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             name="tags"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tags</FormLabel>
                 <FormControl>
-                  <Input placeholder="tag1, tag2, tag3" {...field} />
+                  <TagsInput
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
               name="status"
@@ -243,9 +246,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
               name="publishDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data de Publicação</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -271,8 +276,12 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
             />
           </div>
 
-          <div className="flex gap-4 pt-4">
-            <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700">
+          <div className="flex gap-4 pt-4 border-t">
+            <Button 
+              type="submit" 
+              disabled={loading || !isFormValid} 
+              className="bg-red-600 hover:bg-red-700"
+            >
               {loading ? 'Salvando...' : article ? 'Atualizar' : 'Criar'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>

@@ -1,4 +1,3 @@
-
 import api from '@/config/axios';
 import { API_CONFIG } from '@/config/api';
 
@@ -78,6 +77,26 @@ class ApiClient {
 
   async deleteCategory(id: string) {
     await api.delete(`/categories/${id}`);
+  }
+
+  // Métodos específicos para artigos
+  async createArticle(articleData: any) {
+    const response = await api.post('/articles', articleData);
+    return response.data;
+  }
+
+  async updateArticle(id: string, articleData: any) {
+    const response = await api.put(`/articles/${id}`, articleData);
+    return response.data;
+  }
+
+  async deleteArticle(id: string) {
+    await api.delete(`/articles/${id}`);
+  }
+
+  async getArticleById(id: string) {
+    const response = await api.get(`/articles/${id}`);
+    return response.data;
   }
 }
 
