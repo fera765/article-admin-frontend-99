@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../../styles/quill-custom.css';
@@ -105,12 +105,22 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     'color', 'background', 'blockquote', 'code-block'
   ];
 
-  // Handle content change without causing focus issues
-  const handleChange = (content: string) => {
-    // Clean empty paragraphs but maintain proper content structure
+  // Usar useCallback para evitar re-criação da função a cada render
+  const handleChange = useCallback((content: string) => {
+    console.log('RichTextEditor handleChange called with:', content?.length, 'characters');
+    
+    // Evitar processamento desnecessário se o conteúdo não mudou realmente
+    if (content === value) {
+      return;
+    }
+    
+    // Limpar parágrafos vazios mas manter estrutura adequada
     const cleanContent = content === '<p><br></p>' ? '' : content;
     onChange(cleanContent);
-  };
+  }, [onChange, value]);
+
+  // Log para debug
+  console.log('RichTextEditor render - value:', value?.length, 'characters');
 
   return (
     <div className="space-y-2">

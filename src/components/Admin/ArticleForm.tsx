@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,6 @@ interface ArticleFormProps {
 
 const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel }) => {
   const [loading, setLoading] = useState(false);
-  const [formReady, setFormReady] = useState(false);
   
   const { data: categoriesData, isLoading: categoriesLoading, error: categoriesError } = useCategories();
   const { data: editorsData = [], isLoading: editorsLoading, error: editorsError } = useEditors();
@@ -34,8 +32,6 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   const categories = categoriesData?.categories || [];
 
   console.log('ArticleForm render - Categories:', categories.length, 'Editors:', editorsData.length);
-  console.log('Loading states - Categories:', categoriesLoading, 'Editors:', editorsLoading);
-  console.log('Errors - Categories:', categoriesError, 'Editors:', editorsError);
 
   const form = useForm({
     defaultValues: {
@@ -52,17 +48,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
     },
   });
 
-  const { watch, setValue } = form;
+  const { watch } = form;
   const formValues = watch();
-
-  // Wait for dependencies to load before showing form
-  useEffect(() => {
-    console.log('Checking form readiness...');
-    if (!categoriesLoading && !editorsLoading) {
-      console.log('Dependencies loaded, form ready');
-      setFormReady(true);
-    }
-  }, [categoriesLoading, editorsLoading]);
 
   // Helper function to check if content has meaningful text
   const hasValidContent = (content: string) => {
@@ -81,6 +68,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
     formValues.author;
 
   const onSubmit = async (data: any) => {
+    console.log('Form submission attempt with data:', {
+      ...data,
+      contentLength: data.content?.length
+    });
+
     // Validate content before submission
     if (!hasValidContent(data.content)) {
       toast({
@@ -129,7 +121,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   };
 
   // Show loading state while dependencies are loading
-  if (!formReady) {
+  if (categoriesLoading || editorsLoading) {
     return (
       <div className="space-y-6 max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-center min-h-96">
