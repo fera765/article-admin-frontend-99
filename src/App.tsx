@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout/Layout";
 import HomePage from "@/pages/HomePage";
 import ArticlesPage from "@/pages/ArticlesPage";
+import AdminPage from "@/pages/AdminPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
             {/* Public routes with layout */}
             <Route path="/" element={<Layout><HomePage /></Layout>} />
             <Route path="/articles" element={<Layout><ArticlesPage /></Layout>} />
+            <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
             
             {/* Auth routes without layout */}
             <Route path="/login" element={<LoginPage />} />
