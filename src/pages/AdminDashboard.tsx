@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboardStats, useTopArticles, useRefreshStats } from '@/hooks/useDashboardData';
+import { useAdminStats, useTopArticles, useRefreshStats } from '@/hooks/useAdminData';
 import StatsCard from '@/components/Dashboard/StatsCard';
 import TopArticlesList from '@/components/Dashboard/TopArticlesList';
 import DashboardCharts from '@/components/Dashboard/DashboardCharts';
@@ -17,7 +17,7 @@ const AdminDashboard: React.FC = () => {
     data: stats, 
     isLoading: statsLoading, 
     refetch: refetchStats 
-  } = useDashboardStats();
+  } = useAdminStats();
   
   const { 
     data: topArticles, 
