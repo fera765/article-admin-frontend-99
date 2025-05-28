@@ -111,16 +111,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     
     // Evitar processamento desnecessário se o conteúdo não mudou realmente
     if (content === value) {
+      console.log('Content unchanged, skipping update');
       return;
     }
     
     // Limpar parágrafos vazios mas manter estrutura adequada
     const cleanContent = content === '<p><br></p>' ? '' : content;
+    console.log('Calling onChange with cleaned content');
     onChange(cleanContent);
   }, [onChange, value]);
 
   // Log para debug
-  console.log('RichTextEditor render - value:', value?.length, 'characters');
+  console.log('RichTextEditor render - value length:', value?.length || 0);
 
   return (
     <div className="space-y-2">

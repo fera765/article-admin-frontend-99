@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -123,7 +124,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   // Show loading state while dependencies are loading
   if (categoriesLoading || editorsLoading) {
     return (
-      <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+      <div className="space-y-6 max-h-[80vh] overflow-y-auto p-4">
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto mb-4"></div>
@@ -137,7 +138,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   // Show error state if there are critical errors
   if (categoriesError || editorsError) {
     return (
-      <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+      <div className="space-y-6 max-h-[80vh] overflow-y-auto p-4">
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <p className="text-red-600 mb-4">Erro ao carregar dados necessários</p>
@@ -151,7 +152,7 @@ const ArticleForm: React.FC<ArticleFormProps> = ({ article, onSuccess, onCancel 
   }
 
   return (
-    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+    <div className="space-y-6 max-h-[80vh] overflow-y-auto p-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
