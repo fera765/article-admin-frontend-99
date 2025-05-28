@@ -1,0 +1,42 @@
+
+/* Custom styles for React Quill to ensure proper display */
+.ql-container {
+  font-size: 14px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom: none;
+}
+
+.ql-editor {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.ql-editor p {
+  margin-bottom: 8px;
+}
+
+.ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #94a3b8;
+}
+
+/* Ensure the editor is visible in dialogs */
+.ql-container .ql-editor {
+  background: white;
+  color: #1f2937;
+}
+
+.ql-toolbar .ql-formats {
+  margin-right: 8px;
+}
+
+.ql-snow .ql-tooltip {
+  z-index: 9999;
+}

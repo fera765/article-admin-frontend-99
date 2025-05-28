@@ -6,11 +6,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout/Layout";
+import AdminLayout from "@/components/Dashboard/AdminLayout";
 import HomePage from "@/pages/HomePage";
 import ArticlesPage from "@/pages/ArticlesPage";
-import AdminPage from "@/pages/AdminPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
+import AdminDashboard from "@/pages/AdminDashboard";
+import AdminArticles from "@/pages/AdminArticles";
+import AdminCategories from "@/pages/AdminCategories";
+import AdminNewsletter from "@/pages/AdminNewsletter";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,11 +31,25 @@ const App = () => (
             {/* Public routes with layout */}
             <Route path="/" element={<Layout><HomePage /></Layout>} />
             <Route path="/articles" element={<Layout><ArticlesPage /></Layout>} />
-            <Route path="/admin" element={<Layout><AdminPage /></Layout>} />
             
             {/* Auth routes without layout */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected admin routes with admin layout */}
+            <Route 
+              path="/admin/*" 
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminLayout />
+                </ProtectedRoute>
+              } 
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="articles" element={<AdminArticles />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="newsletter" element={<AdminNewsletter />} />
+            </Route>
             
             {/* Catch-all route */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
