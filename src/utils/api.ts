@@ -39,7 +39,7 @@ class ApiClient {
     return response.data;
   }
 
-  // Novos métodos para o dashboard admin
+  // Métodos para o dashboard admin usando Axios
   async verifyAdmin() {
     const response = await api.get('/private/me');
     return response.data;
@@ -58,6 +58,26 @@ class ApiClient {
   async refreshStats() {
     const response = await api.post('/views/refresh');
     return response.data;
+  }
+
+  // Métodos específicos para categorias
+  async getCategories() {
+    const response = await api.get('/categories');
+    return response.data;
+  }
+
+  async createCategory(categoryData: { name: string; description: string; active: boolean }) {
+    const response = await api.post('/categories', categoryData);
+    return response.data;
+  }
+
+  async updateCategory(id: string, categoryData: { name: string; description: string; active: boolean }) {
+    const response = await api.put(`/categories/${id}`, categoryData);
+    return response.data;
+  }
+
+  async deleteCategory(id: string) {
+    await api.delete(`/categories/${id}`);
   }
 }
 

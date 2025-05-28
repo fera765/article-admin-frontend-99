@@ -27,7 +27,8 @@ import {
   Eye, 
   Edit, 
   Trash2,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react';
 import { Category } from '@/types';
 import CategoryForm from '@/components/Admin/CategoryForm';
@@ -49,7 +50,7 @@ const AdminCategories: React.FC = () => {
   const categoriesPerPage = 20;
   const deleteCategoryMutation = useDeleteCategory();
   
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories({
+  const { data: categoriesData, isLoading: categoriesLoading, error } = useCategories({
     search: searchTerm,
   });
   
@@ -114,7 +115,21 @@ const AdminCategories: React.FC = () => {
   if (categoriesLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600"></div>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-16 w-16 animate-spin text-red-600" />
+          <p className="text-slate-600">Carregando categorias...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <p className="text-red-600 text-lg font-semibold">Erro ao carregar categorias</p>
+          <p className="text-slate-600 mt-2">Tente recarregar a página</p>
+        </div>
       </div>
     );
   }
@@ -126,7 +141,7 @@ const AdminCategories: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Categorias</h1>
           <p className="text-slate-600 mt-1">
-            Gerencie todas as categorias do sistema
+            Gerencie todas as categorias do sistema ({totalCategories} total)
           </p>
         </div>
         
@@ -168,6 +183,17 @@ const AdminCategories: React.FC = () => {
                   <div className="text-slate-500">
                     <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Nenhuma categoria encontrada</p>
+                    {searchTerm && (
+                      <p className="text-sm mt-2">
+                        Tente uma busca diferente ou{' '}
+                        <button 
+                          onClick={() => setSearchTerm('')}
+                          className="text-red-600 underline"
+                        >
+                          limpe o filtro
+                        </button>
+                      </p>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -200,10 +226,15 @@ const AdminCategories: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="Visualizar">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEditCategory(category)}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleEditCategory(category)}
+                        title="Editar"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button 
@@ -212,8 +243,13 @@ const AdminCategories: React.FC = () => {
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteCategory(category)}
                         disabled={deleteCategoryMutation.isPending}
+                        title="Excluir"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        {deleteCategoryMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -265,6 +301,7 @@ const AdminCategories: React.FC = () => {
       {/* Stats */}
       <div className="text-sm text-slate-500 text-center">
         Exibindo {paginatedCategories.length} de {totalCategories} categorias
+        {searchTerm && ` (filtrado por "${searchTerm}")`}
       </div>
 
       {/* Category Form Dialog */}

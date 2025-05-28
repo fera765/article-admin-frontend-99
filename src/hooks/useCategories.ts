@@ -67,15 +67,15 @@ export const useCreateCategory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
-        title: 'Categoria cadastrada com sucesso!',
+        title: '✅ Categoria cadastrada com sucesso!',
         description: 'A nova categoria foi adicionada.',
       });
     },
     onError: (error: any) => {
       console.error('Error creating category:', error);
       toast({
-        title: 'Erro ao cadastrar categoria',
-        description: 'Verifique se todos os campos obrigatórios foram preenchidos.',
+        title: '❌ Erro ao cadastrar categoria',
+        description: 'Preencha todos os campos obrigatórios!',
         variant: 'destructive',
       });
     },
@@ -94,15 +94,15 @@ export const useUpdateCategory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
-        title: 'Categoria atualizada com sucesso!',
+        title: '✅ Categoria atualizada com sucesso!',
         description: 'As alterações foram salvas.',
       });
     },
     onError: (error: any) => {
       console.error('Error updating category:', error);
       toast({
-        title: 'Erro ao atualizar categoria',
-        description: 'Tente novamente.',
+        title: '❌ Erro ao atualizar categoria',
+        description: 'Preencha todos os campos obrigatórios!',
         variant: 'destructive',
       });
     },
@@ -120,14 +120,14 @@ export const useDeleteCategory = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
-        title: 'Categoria excluída com sucesso!',
+        title: '🗑️ Categoria excluída com sucesso!',
         description: 'A categoria foi removida permanentemente.',
       });
     },
     onError: (error: any) => {
       console.error('Error deleting category:', error);
       toast({
-        title: 'Erro ao excluir categoria',
+        title: '❌ Erro ao excluir categoria',
         description: 'Tente novamente.',
         variant: 'destructive',
       });

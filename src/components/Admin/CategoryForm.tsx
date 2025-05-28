@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Category } from '@/types';
 import { useCreateCategory, useUpdateCategory } from '@/hooks/useCategories';
+import { Loader2 } from 'lucide-react';
 
 interface CategoryFormProps {
   category?: Category | null;
@@ -37,9 +38,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
 
   const onSubmit = async (data: CategoryFormData) => {
     try {
-      // Validação básica
-      if (!data.name.trim() || !data.description.trim()) {
+      // Validação manual adicional
+      if (!data.name.trim()) {
         form.setError('name', { message: 'Nome é obrigatório' });
+        return;
+      }
+
+      if (!data.description.trim()) {
         form.setError('description', { message: 'Descrição é obrigatória' });
         return;
       }
@@ -86,6 +91,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
                   <Input 
                     placeholder="Digite o nome da categoria" 
                     {...field}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -108,6 +114,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
                     placeholder="Digite a descrição da categoria" 
                     {...field} 
                     rows={3}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -130,6 +137,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
                   <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={isLoading}
                   />
                 </FormControl>
               </FormItem>
@@ -142,6 +150,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSuccess, onCanc
               disabled={isLoading} 
               className="bg-red-600 hover:bg-red-700"
             >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? 'Salvando...' : category ? 'Atualizar' : 'Criar'}
             </Button>
             <Button 
