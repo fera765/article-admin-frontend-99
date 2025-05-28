@@ -12,6 +12,9 @@ import ArticlesPage from "@/pages/ArticlesPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import AdminArticles from "@/pages/AdminArticles";
+import AdminCategories from "@/pages/AdminCategories";
+import AdminNewsletter from "@/pages/AdminNewsletter";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -43,7 +46,9 @@ const App = () => (
               } 
             >
               <Route index element={<AdminDashboard />} />
-              {/* Rotas futuras do admin poderão ser adicionadas aqui */}
+              <Route path="articles" element={<AdminArticles />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="newsletter" element={<AdminNewsletter />} />
             </Route>
             
             {/* Catch-all route */}
